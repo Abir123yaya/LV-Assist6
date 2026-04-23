@@ -94,7 +94,7 @@
     <div class="lv-logo">LV</div>
     <div class="lv-header-text">
       <h1>LV-Assist</h1>
-      <p>Powered by ChatGPT</p>
+      <p>Powered by Google Gemini</p>
     </div>
     <div class="lv-status"><div class="lv-dot"></div>Online</div>
   </div>
@@ -121,7 +121,7 @@
   </div>
 </div>
 <script>
-  // This automatically works on Vercel — no changes needed after deploying
+  // Automatically works on Vercel — no changes needed after deploying
   const API_URL = '/api/chat';
 
   let conversationHistory = [];
@@ -141,8 +141,7 @@
     bubble.className = 'lv-bubble ' + (isUser ? 'user-bubble' : 'bot-bubble') + (isError ? ' error-bubble' : '');
     bubble.textContent = text;
     wrap.appendChild(avatar); wrap.appendChild(bubble);
-    msgsEl.appendChild(wrap);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+    msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
   }
 
   function showTyping() {
@@ -154,14 +153,11 @@
     bubble.className = 'lv-bubble bot-bubble';
     bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
     wrap.appendChild(avatar); wrap.appendChild(bubble);
-    msgsEl.appendChild(wrap);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+    msgsEl.appendChild(wrap); msgsEl.scrollTop = msgsEl.scrollHeight;
     return wrap;
   }
 
-  function setLoading(val) {
-    isLoading = val; inputEl.disabled = val; sendBtn.disabled = val;
-  }
+  function setLoading(val) { isLoading = val; inputEl.disabled = val; sendBtn.disabled = val; }
 
   async function sendMessage() {
     const text = inputEl.value.trim();
@@ -170,7 +166,7 @@
     addMsg(text, true);
     inputEl.value = '';
     setLoading(true);
-    conversationHistory.push({ role: 'user', content: text });
+    conversationHistory.push({ role: 'user', parts: [{ text }] });
     const typingRow = showTyping();
     try {
       const response = await fetch(API_URL, {
@@ -181,7 +177,7 @@
       const data = await response.json();
       typingRow.remove();
       if (data.reply) {
-        conversationHistory.push({ role: 'assistant', content: data.reply });
+        conversationHistory.push({ role: 'model', parts: [{ text: data.reply }] });
         addMsg(data.reply, false);
       } else {
         addMsg(data.error || 'Something went wrong.', false, true);
