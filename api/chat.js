@@ -21,19 +21,15 @@ export default async function handler(req, res) {
 Keep responses concise and easy to read. Use simple language appropriate for middle and high school students. Do not discuss inappropriate topics.`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 1000,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...messages
-        ]
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: messages
       })
     });
 
@@ -41,7 +37,7 @@ Keep responses concise and easy to read. Use simple language appropriate for mid
 
     if (data.error) return res.status(400).json({ error: data.error.message });
 
-    const reply = data.choices?.[0]?.message?.content || 'No response generated.';
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
     res.status(200).json({ reply });
   } catch (err) {
     console.error(err);
